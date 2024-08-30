@@ -50,6 +50,7 @@ import com.flex.forensics.facedetector.FaceDetectorProcessor
 import com.flex.forensics.preference.PreferenceUtils
 import com.flex.forensics.preference.SettingsActivity
 import com.flex.forensics.textdetector.TextRecognitionProcessor
+import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 //import com.flex.forensics.BarcodeScannerProcessor
 //import com.google.mlkit.vision.demo.kotlin.facedetector.FaceDetectorProcessor
@@ -165,16 +166,32 @@ class StillImageActivity : AppCompatActivity(),RecognitionResultCallback {
     imageProcessor?.run { this.stop() }
   }
 
-  override fun getRecognizedResult(text: String) {
+  override fun getRecognizedResult(text: Any) {
     // Handle the recognized text in the activity
 //    runOnUiThread {
 //      textView.text = recognizedText
 //    }
     val returnIntent = Intent()
-    returnIntent.putExtra("recognized_text", text.replace("\u00A0", " ").trim())
+
+    var result = ""
+    if(text is String) {
+      result = text
+      Log.d(TAG, "Text in StillImageActivity $text")
+      returnIntent.putExtra("recognized_text", result.replace("\u00A0", " ").trim())
+
+    } else if(text is List<*>){
+      var barcodes = text as List<Barcode>;
+      var barcodeStrings: List<String> = barcodes.map { barcode -> barcode.displayValue.toString() }
+      Log.d(TAG,"Barcode List: $barcodeStrings")
+      returnIntent.putExtra("barcodes", ArrayList(barcodeStrings))
+    }
+
+    else {
+      Log.d(TAG,"No text found")
+    }
+
     setResult(Activity.RESULT_OK, returnIntent)
     finish()
-    Log.d(TAG,"Text in StillImageActivity $text")
   }
 
   private fun populateFeatureSelector() {
@@ -412,7 +429,7 @@ class StillImageActivity : AppCompatActivity(),RecognitionResultCallback {
           val faceDetectorOptions = PreferenceUtils.getFaceDetectorOptions(this)
           imageProcessor = FaceDetectorProcessor(this, faceDetectorOptions)
         }
-        BARCODE_SCANNING -> imageProcessor = BarcodeScannerProcessor(this, zoomCallback = null)
+        BARCODE_SCANNING -> imageProcessor = BarcodeScannerProcessor(this, zoomCallback = null, callback = this)
         TEXT_RECOGNITION_LATIN ->
           imageProcessor = TextRecognitionProcessor(this, TextRecognizerOptions.Builder().build(),this)
 //        TEXT_RECOGNITION_CHINESE ->

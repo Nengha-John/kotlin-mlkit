@@ -50,9 +50,22 @@ class MainActivity : ComponentActivity() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
 
             if (result.resultCode == Activity.RESULT_OK) {
+                var text:String? = "";
                 val values = result.data?.getStringExtra("recognized_text")
-                Log.d(TAG,"Updated text intent $values")
-                recognizedText.value = values?: "No text"
+                if(values != null){
+                    text = values
+                }
+                val barcodes = result.data?.getSerializableExtra("barcodes")
+                Log.d(TAG,"Barcodes: $barcodes")
+                if(barcodes != null){
+                    var barList:List<String> = barcodes as List<String>
+                    for (barcode in barList){
+                        text += "\n $barcode"
+                    }
+                }
+
+                Log.d(TAG,"Updated text intent $text")
+                recognizedText.value = text?: "No text"
             }
         }
 
@@ -164,7 +177,9 @@ class MainActivity : ComponentActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 
         if (requestCode == REQUEST_CODE_TEXT_RECOGNITION && resultCode == Activity.RESULT_OK) {
+            Log.d(TAG,"data $data")
             val newRecognizedText = data?.getStringExtra("recognized_text") ?: ""
+//            val barcodes =
             // Update the recognizedText variable with the new value
             runOnUiThread { setContent { recognizedText.value = newRecognizedText } }
 //            recognizedText.value = newRecognizedText

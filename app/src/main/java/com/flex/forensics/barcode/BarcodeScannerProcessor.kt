@@ -3,6 +3,7 @@ package com.flex.forensics.barcode
 import android.content.Context
 import android.util.Log
 import com.flex.forensics.GraphicOverlay
+import com.flex.forensics.RecognitionResultCallback
 import com.flex.forensics.VisionProcessorBase
 import com.google.android.gms.tasks.Task
 import com.google.mlkit.vision.barcode.BarcodeScanner
@@ -13,8 +14,9 @@ import com.google.mlkit.vision.barcode.ZoomSuggestionOptions.ZoomCallback
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 
-class BarcodeScannerProcessor(context: Context, zoomCallback: ZoomCallback?):   VisionProcessorBase<List<Barcode>>(context) {
+class BarcodeScannerProcessor(context: Context, zoomCallback: ZoomCallback?,callback: RecognitionResultCallback):   VisionProcessorBase<List<Barcode>>(context) {
     private var barcodeScanner: BarcodeScanner
+    private var successCallback: RecognitionResultCallback = callback
 
     init {
         // Note that if you know which format of barcode your app is dealing with, detection will be
@@ -44,10 +46,12 @@ class BarcodeScannerProcessor(context: Context, zoomCallback: ZoomCallback?):   
     }
 
     override fun onSuccess(barcodes: List<Barcode>, graphicOverlay: GraphicOverlay) {
+        successCallback.getRecognizedResult(barcodes)
         if (barcodes.isEmpty()) {
             Log.v(MANUAL_TESTING_LOG, "No barcode has been detected")
         }
         for (i in barcodes.indices) {
+            barcodes[i]
             val barcode = barcodes[i]
             graphicOverlay.add(BarcodeGraphic(graphicOverlay, barcode))
             logExtrasForTesting(barcode)

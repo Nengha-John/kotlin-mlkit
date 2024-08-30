@@ -72,13 +72,6 @@ class TextRecognitionProcessor(
 //    logExtrasForTesting(text)
     Log.d(TAG,text.text);
     successCallback.getRecognizedResult(text.text)
-    resultText = text.text;
-    val returnIntent = Intent()
-    returnIntent.putExtra("DETECTED_RESULT", resultText)
-    setResult(context, resultText)
-    if(context is Activity){
-      context.finish()
-    }
 
 //
 //    val intent = Intent(context, ResultDisplayComposable::class.java).apply {
