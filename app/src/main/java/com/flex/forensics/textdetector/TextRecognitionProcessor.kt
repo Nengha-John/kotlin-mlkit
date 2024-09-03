@@ -71,7 +71,7 @@ class TextRecognitionProcessor(
     Log.d(TAG, "On-device Text detection successful $viewed")
 //    logExtrasForTesting(text)
     Log.d(TAG,text.text);
-    successCallback.getRecognizedResult(text.text)
+    successCallback.getRecognizedResult(text.text,"text")
 
 //
 //    val intent = Intent(context, ResultDisplayComposable::class.java).apply {

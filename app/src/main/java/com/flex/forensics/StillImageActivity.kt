@@ -166,7 +166,7 @@ class StillImageActivity : AppCompatActivity(),RecognitionResultCallback {
     imageProcessor?.run { this.stop() }
   }
 
-  override fun getRecognizedResult(text: Any) {
+  override fun getRecognizedResult(text: Any,type: String) {
     // Handle the recognized text in the activity
 //    runOnUiThread {
 //      textView.text = recognizedText
@@ -174,16 +174,19 @@ class StillImageActivity : AppCompatActivity(),RecognitionResultCallback {
     val returnIntent = Intent()
 
     var result = ""
-    if(text is String) {
-      result = text
+    if(type == "text") {
+      result = text as String
       Log.d(TAG, "Text in StillImageActivity $text")
       returnIntent.putExtra("recognized_text", result.replace("\u00A0", " ").trim())
 
-    } else if(text is List<*>){
+    } else if(type == "barcode"){
       var barcodes = text as List<Barcode>;
       var barcodeStrings: List<String> = barcodes.map { barcode -> barcode.displayValue.toString() }
       Log.d(TAG,"Barcode List: $barcodeStrings")
       returnIntent.putExtra("barcodes", ArrayList(barcodeStrings))
+    } else if(type == "face"){
+      var faceImages = text as ArrayList<Uri>;
+      returnIntent.putExtra("faces",faceImages)
     }
 
     else {
@@ -427,7 +430,7 @@ class StillImageActivity : AppCompatActivity(),RecognitionResultCallback {
         FACE_DETECTION -> {
           Log.i(TAG, "Using Face Detector Processor")
           val faceDetectorOptions = PreferenceUtils.getFaceDetectorOptions(this)
-          imageProcessor = FaceDetectorProcessor(this, faceDetectorOptions)
+          imageProcessor = FaceDetectorProcessor(this, faceDetectorOptions,this)
         }
         BARCODE_SCANNING -> imageProcessor = BarcodeScannerProcessor(this, zoomCallback = null, callback = this)
         TEXT_RECOGNITION_LATIN ->

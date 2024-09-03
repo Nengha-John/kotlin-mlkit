@@ -46,7 +46,7 @@ class BarcodeScannerProcessor(context: Context, zoomCallback: ZoomCallback?,call
     }
 
     override fun onSuccess(barcodes: List<Barcode>, graphicOverlay: GraphicOverlay) {
-        successCallback.getRecognizedResult(barcodes)
+        successCallback.getRecognizedResult(barcodes,"barcode")
         if (barcodes.isEmpty()) {
             Log.v(MANUAL_TESTING_LOG, "No barcode has been detected")
         }

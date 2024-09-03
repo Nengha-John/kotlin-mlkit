@@ -9,8 +9,11 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.widget.Space
+import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -23,14 +26,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
@@ -38,8 +44,11 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.flex.forensics.ui.theme.ForensicsTheme
 import java.util.ArrayList
 import coil.compose.rememberAsyncImagePainter
+import coil.size.Scale
+import coil.size.Size
 
 class MainActivity : ComponentActivity() {
     var recognizedText =  mutableStateOf("")
@@ -106,7 +115,7 @@ class MainActivity : ComponentActivity() {
                         Greetings(name = "User", onNavigate = {
 //                            val intent = Intent(this@MainActivity, StillImageActivity::class.java)
 //                            startActivityForResult(intent, REQUEST_CODE_TEXT_RECOGNITION)
-                           launchProcessor()
+                            launchProcessor()
 
                         }, recognizedText = recognizedText.value,facesUriList.value)
                     }
@@ -192,7 +201,7 @@ class MainActivity : ComponentActivity() {
             Log.d(TAG, "Recognized text in Main Activity ${recognizedText.value}")
         } else {
             super.onActivityResult(requestCode, resultCode, data)
-            
+
         }
     }
 

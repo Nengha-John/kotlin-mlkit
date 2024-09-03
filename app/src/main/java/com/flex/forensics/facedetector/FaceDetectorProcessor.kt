@@ -17,23 +17,31 @@
 package com.flex.forensics.facedetector
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Rect
+import android.net.Uri
 import android.util.Log
 import com.google.android.gms.tasks.Task
 import com.google.mlkit.vision.common.InputImage
 import com.flex.forensics.GraphicOverlay
+import com.flex.forensics.RecognitionResultCallback
 import com.flex.forensics.VisionProcessorBase
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetector
 import com.google.mlkit.vision.face.FaceDetectorOptions
 import com.google.mlkit.vision.face.FaceLandmark
+import java.io.File
 import java.util.Locale
 
 /** Face Detector Demo.  */
-class FaceDetectorProcessor(context: Context, detectorOptions: FaceDetectorOptions?) :
+class FaceDetectorProcessor(context: Context, detectorOptions: FaceDetectorOptions?,callback: RecognitionResultCallback) :
   VisionProcessorBase<List<Face>>(context) {
 
   private val detector: FaceDetector
+  private var processedImage: InputImage? = null
+  private var successCallback = callback;
 
   init {
     val options = detectorOptions
@@ -53,11 +61,42 @@ class FaceDetectorProcessor(context: Context, detectorOptions: FaceDetectorOptio
   }
 
   override fun detectInImage(image: InputImage): Task<List<Face>> {
+    processedImage = image
     return detector.process(image)
   }
 
   override fun onSuccess(faces: List<Face>, graphicOverlay: GraphicOverlay) {
+    Log.d(TAG,"The processed image is ${processedImage.toString()}")
+    var imageUris: ArrayList<Uri> = ArrayList<Uri>()
     for (face in faces) {
+      if(processedImage!!.bitmapInternal != null){
+        var padding = 60;
+        val expandedBoundingBox = Rect(
+          face.boundingBox.left  ,
+          face.boundingBox.top ,
+          face.boundingBox.right ,
+          face.boundingBox.bottom + padding * 2
+        )
+
+        var bitmap = processedImage?.bitmapInternal?.let { Bitmap.createBitmap(
+          expandedBoundingBox.width(),
+          expandedBoundingBox.height() + 40 ,Bitmap.Config.RGB_565) }
+//        var canvas = processedImage!!.bitmapInternal?.let { Canvas(it) }
+        var canvas = bitmap?.let { Canvas(it) }
+        val sourceRect = Rect(expandedBoundingBox.left,expandedBoundingBox.top - expandedBoundingBox.top - padding / 2 ,expandedBoundingBox.right,expandedBoundingBox.bottom )
+        val destRect = Rect(0, 0, expandedBoundingBox.width(), expandedBoundingBox.height() )
+        processedImage!!.bitmapInternal?.let { canvas?.drawBitmap(it,sourceRect, destRect, null) }
+
+        val tempFile = File.createTempFile("cropped_face", ".jpg")
+        if (bitmap != null) {
+          bitmap.compress(Bitmap.CompressFormat.JPEG, 100, tempFile.outputStream())
+          imageUris.add(Uri.fromFile(tempFile))
+        }
+
+      }
+      successCallback.getRecognizedResult(imageUris,"face")
+      Log.d(TAG,"Detected faces $imageUris")
+
       graphicOverlay.add(FaceGraphic(graphicOverlay, face))
 
       logExtrasForTesting(face)

@@ -17,21 +17,8 @@
         </intent>
     </queries>
 
-    <application
-        android:allowBackup="true"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
-        android:theme="@style/Theme.Forensics"
-        tools:targetApi="31">
-        <activity
-            android:name=".ui.activities.ResultDisplayComposable"
-            android:exported="false"
-            android:label="@string/title_activity_result_display_composable"
-            android:theme="@style/Theme.Forensics" />
+    <application>
+
 
         <meta-data
             android:name="com.google.android.gms.version"
@@ -43,18 +30,6 @@
         <meta-data
             android:name="com.google.mlkit.vision.DEPENDENCIES"
             android:value="barcode,face,ocr" />
-
-        <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.Forensics">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
         <activity
             android:name=".StillImageActivity"
             android:exported="false"

@@ -1,5 +1,5 @@
 package com.flex.forensics
 
 interface RecognitionResultCallback {
-    fun getRecognizedResult(result: Any)
+    fun getRecognizedResult(result: Any,type:String)
 }
