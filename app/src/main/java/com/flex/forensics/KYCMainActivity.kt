@@ -6,14 +6,13 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.widget.Space
-import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -24,16 +23,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
@@ -41,11 +38,12 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.flex.forensics.ui.theme.ForensicsTheme
 import java.util.ArrayList
+import coil.compose.rememberAsyncImagePainter
 
 class MainActivity : ComponentActivity() {
     var recognizedText =  mutableStateOf("")
+    var facesUriList = mutableStateOf<List<Uri>?>(null)
     val intentLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
 
@@ -62,6 +60,14 @@ class MainActivity : ComponentActivity() {
                     for (barcode in barList){
                         text += "\n $barcode"
                     }
+                }
+
+                val faces = result.data?.getSerializableExtra("faces")
+                if(faces != null){
+                    var facesUri = faces as ArrayList<Uri>
+                    Log.d(TAG,"\nDisplaying ${facesUri.size} faces...")
+                    recognizedText.value += "\nDisplaying ${facesUri.size} faces..."
+                    facesUriList.value = facesUri
                 }
 
                 Log.d(TAG,"Updated text intent $text")
@@ -102,7 +108,7 @@ class MainActivity : ComponentActivity() {
 //                            startActivityForResult(intent, REQUEST_CODE_TEXT_RECOGNITION)
                            launchProcessor()
 
-                        }, recognizedText = recognizedText.value)
+                        }, recognizedText = recognizedText.value,facesUriList.value)
                     }
                 }
             }
@@ -205,7 +211,7 @@ class MainActivity : ComponentActivity() {
 //}
 
 @Composable
-fun Greetings(name: String, onNavigate: () -> Unit, recognizedText: String) {
+fun Greetings(name: String, onNavigate: () -> Unit, recognizedText: String,facesUri: List<Uri>?) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -253,5 +259,33 @@ fun Greetings(name: String, onNavigate: () -> Unit, recognizedText: String) {
             ),
             modifier = Modifier.padding(top = 16.dp) // Add padding above the Text
         )
+
+        facesUri?.let {
+            Spacer(modifier = Modifier.height(24.dp)) // Space before the images
+            DisplayFaces(it)
+        }
+    }
+}
+
+@Composable
+fun DisplayFaces(facesUri: List<Uri>) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        for (uri in facesUri) {
+            Spacer(modifier = Modifier.height(16.dp)) // Space between images
+            Image(
+                painter = rememberAsyncImagePainter(uri),
+                contentDescription = "Detected face",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp),
+                contentScale = ContentScale.Crop
+            )
+        }
     }
 }
